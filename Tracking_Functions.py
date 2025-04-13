@@ -454,6 +454,131 @@ def detect_local_minima(arr):
 
 # ==============================================================
 # ==============================================================
+
+###########################################################
+###########################################################
+### LPS (Low-Pressure System) Detection and Tracking Functions
+
+def detect_lps_candidates(
+    psifile,        # File containing Streamfunction at 850 (PSI)
+    pslfile,        # File containing mean sea level pressure (msl)
+    rhfile,         # File containing relative humidity at 850 hPa (RH)
+    uvfile,         # File containing surface wind field (u10, v10)
+    zsfile,         # File containing surface geopotential (zs)
+    lsmfile,        # File containing land-sea fraction (lsm)
+    candidatefile,  # Output candidate file
+    mergedist=5.0   # Merge candidates within this distance (degrees)
+    ):
+    """
+    Detect LPS candidates as minima in the streamfunction field
+    """
+    # This would be implemented using xarray/netCDF4 to read the input files
+    # and numpy/scipy for the detection algorithms
+    
+    # Implementation would include:
+    # 1. Reading all input files
+    # 2. Finding minima in the streamfunction field
+    # 3. Merging nearby candidates
+    # 4. Calculating additional parameters (RH, wind speed, etc.)
+    # 5. Writing output to candidate file
+    
+    # Placeholder implementation - would need to be fully developed
+    print(f"Detecting LPS candidates and writing to {candidatefile}")
+    # [Actual implementation would go here]
+    
+
+def stitch_lps_tracks(
+    candidatefile,  # Input candidate file
+    outfile,        # Output track file
+    range_dist=3.0, # Maximum distance between candidates (degrees)
+    minlength=5,    # Minimum track length (time steps)
+    maxgap=2,       # Maximum gap size (time steps)
+    zs_thresh=8000, # Surface geopotential threshold (m^2 s^-2)
+    rh_thresh=85,   # Relative humidity threshold (%)
+    min_thresh_steps=4  # Minimum steps meeting threshold
+    ):
+    """
+    Stitch candidates into tracks with quality control
+    """
+    # This would implement the track stitching logic
+    
+    print(f"Stitching LPS tracks and writing to {outfile}")
+    # [Actual implementation would go here]
+
+
+def calculate_lps_metrics(
+    trackfile,      # Input track file
+    pslfile,        # MSL pressure file
+    uvfile,         # Wind field file
+    outfile,        # Output file with metrics
+    radius=3.0      # Radius for calculations (degrees)
+    ):
+    """
+    Calculate derived quantities for LPS tracks:
+    - Closed contours of MSLP
+    - ACEPSL (Accumulated Cyclone Energy Proxy from SLP)
+    - ACE (Accumulated Cyclone Energy)
+    - PDI (Power Dissipation Index)
+    - IKE (Integrated Kinetic Energy)
+    """
+    # Implementation would calculate all these metrics
+    
+    print(f"Calculating LPS metrics and writing to {outfile}")
+    # [Actual implementation would go here]
+
+
+def run_full_lps_analysis(
+    psifile, pslfile, rhfile, uvfile, zsfile, lsmfile,
+    time_resolution='6hour',  # Time resolution of data
+    output_dir='./'
+    ):
+    """
+    Run complete LPS detection and tracking pipeline
+    """
+    # Set file names
+    candidatefile = f"{output_dir}LPS_candidates.txt"
+    outfile = f"{output_dir}LPS_output.txt"
+    trackfile = f"{output_dir}LPS_track.txt"
+    
+    # Detect candidates
+    detect_lps_candidates(psifile, pslfile, rhfile, uvfile, zsfile, lsmfile, candidatefile)
+    
+    # Set parameters based on time resolution
+    if time_resolution == '1hour':
+        minlength = 30
+        maxgap = 12
+        zs_thresh_steps = 24
+        rh_thresh_steps = 24
+    elif time_resolution == '3hour':
+        minlength = 10
+        maxgap = 4
+        zs_thresh_steps = 8
+        rh_thresh_steps = 8
+    else:  # 6hour
+        minlength = 5
+        maxgap = 2
+        zs_thresh_steps = 4
+        rh_thresh_steps = 4
+    
+    # Stitch tracks
+    stitch_lps_tracks(
+        candidatefile, outfile,
+        range_dist=3.0,
+        minlength=minlength,
+        maxgap=maxgap,
+        zs_thresh=8000,
+        rh_thresh=85,
+        min_thresh_steps=min_thresh_steps
+    )
+    
+    # Calculate metrics
+    calculate_lps_metrics(outfile, pslfile, uvfile, trackfile)
+    
+    return trackfile
+
+###########################################################
+###########################################################
+
 def Feature_Calculation(DATA_all,    # np array that contains [time,lat,lon,Variables] with vars
                         Variables,   # Variables beeing ['V', 'U', 'T', 'Q', 'SLP']
                         dLon,        # distance between longitude cells
